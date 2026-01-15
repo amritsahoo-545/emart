@@ -4,8 +4,11 @@ import com.emart.dtos.ProductDtoRequest;
 import com.emart.dtos.ProductDtoResponse;
 import com.emart.services.ProductService;
 
-import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,12 +24,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@RequiredArgsConstructor
 public class ProductController {
 
     private static final Logger logger = LogManager.getLogger(ProductController.class);
 
     private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
     @GetMapping
     public ResponseEntity<List<ProductDtoResponse>> getProducts() {
@@ -51,5 +57,13 @@ public class ProductController {
         logger.info("Deleting product with id: {}", id);
         productService.deleteProduct(id);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/session")
+    public ResponseEntity<String> getSession(HttpServletRequest req){
+    	return ResponseEntity.ok().body(req.getSession().getId());
+    }
+    @GetMapping("/csrf-token")
+    public ResponseEntity<CsrfToken> getCsrfToken(HttpServletRequest req){
+    	return ResponseEntity.ok().body((CsrfToken)req.getAttribute("_csrf"));
     }
 }
